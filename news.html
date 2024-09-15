@@ -5,8 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News - Sudheera Stores</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1; /* Ensure the canvas is behind the content */
+        }
+        main {
+            position: relative;
+            z-index: 1; /* Ensure the main content is above the canvas */
+            color: white; /* Adjust text color for better visibility */
+        }
+    </style>
 </head>
 <body>
+    <canvas id="canvas"></canvas>
     <header>
         <h1>Lastrow News</h1>
         <nav>
@@ -21,27 +41,12 @@
     <main>
         <section id="news">
             <h2>Latest News</h2>
-            <p>Stay updated with our latest news and offersmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm.</p>
+            <p>Stay updated with our latest news and offers.</p>
         </section>
     </main>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Web Animation</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-        }
-        canvas {
-            display: block;
-        }
-    </style>
-</head>
-<center>
-<body>
-    <canvas id="canvas"></canvas>
+    <footer>
+        <p>© 2024 Lastrow News</p>
+    </footer>
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -87,10 +92,5 @@
             points = [];
         });
     </script>
-</center>
-
-    <footer>
-        <p>© 2024 Lastrow News</p>
-    </footer>
 </body>
 </html>
