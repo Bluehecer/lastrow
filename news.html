@@ -16,6 +16,7 @@
                 <li><a href="products.html">Products</a></li>
                 <li><a href="contact.html">Contact</a></li>
                 <li><a href="news.html" aria-current="page">News</a></li>
+                <li><a href="admin.html">Portal</a></li>
             </ul>
         </nav>
     </header>
@@ -23,6 +24,17 @@
         <section id="news">
             <h2>Latest News</h2>
             <p>Stay updated with our latest news and offers.</p>
+        </section>
+        <section class="store-feed" aria-label="News added from the store portal" hidden>
+            <div id="news-from-store" class="store-news-list"></div>
+        </section>
+        <section class="store-feed" aria-label="Photos added from the store portal" hidden>
+            <h2>Photos</h2>
+            <div id="photos-from-store" class="store-photo-list"></div>
+        </section>
+        <section class="store-feed" aria-label="Topics added from the store portal" hidden>
+            <h2>Topics</h2>
+            <div id="topics-from-store" class="store-topic-list"></div>
         </section>
     </main>
     <script>
@@ -89,6 +101,7 @@
         resizeCanvas();
         animate();
     </script>
+    <script type="module" src="public-content.js"></script>
       <footer>
         <p>© 2024 Lastrow News</p>
     </footer>

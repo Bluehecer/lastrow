@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080a13">
+    <title>Store portal - Lastrow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="portal-page">
+    <header>
+        <h1>LAST ROW <span class="portal-brand-note">/ STORE PORTAL</span></h1>
+        <nav aria-label="Main navigation">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="news.html">News</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="portal-main">
+        <section class="portal-shell">
+            <div class="portal-heading">
+                <div>
+                    <p class="portal-eyebrow">CONTENT MANAGEMENT</p>
+                    <h2>Store portal</h2>
+                    <p>Sign in to manage products, news, photos, and topics.</p>
+                </div>
+                <button id="sign-out" class="portal-secondary-button" type="button" hidden>Sign out</button>
+            </div>
+
+            <p id="portal-status" class="portal-status" role="status" aria-live="polite">Checking Firebase setup…</p>
+
+            <form id="login-form" class="portal-login" hidden>
+                <label>
+                    Email
+                    <input name="email" type="email" autocomplete="username" required>
+                </label>
+                <label>
+                    Password
+                    <input name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <button class="portal-primary-button" type="submit">Sign in</button>
+                <p>Admin accounts are created in Firebase Authentication. Public sign-up is disabled.</p>
+            </form>
+
+            <div id="portal-workspace" hidden>
+                <p id="signed-in-as" class="portal-signed-in"></p>
+                <div class="portal-tabs" role="tablist" aria-label="Store content">
+                    <button class="portal-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="panel-products" id="tab-products" data-panel="panel-products">Products</button>
+                    <button class="portal-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-news" id="tab-news" data-panel="panel-news">News</button>
+                    <button class="portal-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-photos" id="tab-photos" data-panel="panel-photos">Photos</button>
+                    <button class="portal-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-topics" id="tab-topics" data-panel="panel-topics">Topics</button>
+                </div>
+
+                <section class="portal-panel" id="panel-products" role="tabpanel" aria-labelledby="tab-products">
+                    <div class="portal-panel-heading"><h3>Add a product</h3><p>Product details and an optional price.</p></div>
+                    <form class="portal-form" data-collection="products" data-kind="product">
+                        <label>Product name<input name="title" maxlength="100" required></label>
+                        <label>Price (optional)<input name="price" maxlength="40" placeholder="e.g. $20.00"></label>
+                        <label class="portal-wide">Product photo<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required></label>
+                        <button class="portal-primary-button" type="submit">Add product</button>
+                    </form>
+                    <div class="portal-records" id="records-products" aria-live="polite"></div>
+                </section>
+
+                <section class="portal-panel" id="panel-news" role="tabpanel" aria-labelledby="tab-news" hidden>
+                    <div class="portal-panel-heading"><h3>Publish news</h3><p>Share an update with a title, topic, story, and optional cover image.</p></div>
+                    <form class="portal-form" data-collection="news" data-kind="news">
+                        <label>Title<input name="title" maxlength="140" required></label>
+                        <label>Topic<select name="topic" class="portal-topic-options"><option value="">No topic</option></select></label>
+                        <label class="portal-wide">Story<textarea name="body" rows="5" maxlength="5000" required></textarea></label>
+                        <label class="portal-wide">Cover photo (optional)<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+                        <button class="portal-primary-button" type="submit">Publish news</button>
+                    </form>
+                    <div class="portal-records" id="records-news" aria-live="polite"></div>
+                </section>
+
+                <section class="portal-panel" id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden>
+                    <div class="portal-panel-heading"><h3>Add a photo</h3><p>Add an image to the public photo gallery.</p></div>
+                    <form class="portal-form" data-collection="photos" data-kind="photo">
+                        <label>Caption<input name="title" maxlength="120" required></label>
+                        <label class="portal-wide">Photo<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif" required></label>
+                        <button class="portal-primary-button" type="submit">Add photo</button>
+                    </form>
+                    <div class="portal-records" id="records-photos" aria-live="polite"></div>
+                </section>
+
+                <section class="portal-panel" id="panel-topics" role="tabpanel" aria-labelledby="tab-topics" hidden>
+                    <div class="portal-panel-heading"><h3>Manage topics</h3><p>Create topics to organize news posts.</p></div>
+                    <form class="portal-form" data-collection="topics" data-kind="topic">
+                        <label>Topic name<input name="title" maxlength="60" required></label>
+                        <label class="portal-wide">Description (optional)<textarea name="body" rows="3" maxlength="300"></textarea></label>
+                        <button class="portal-primary-button" type="submit">Add topic</button>
+                    </form>
+                    <div class="portal-records" id="records-topics" aria-live="polite"></div>
+                </section>
+            </div>
+        </section>
+    </main>
+    <footer><p>Lastrow Store Portal</p></footer>
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

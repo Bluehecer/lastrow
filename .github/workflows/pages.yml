@@ -29,7 +29,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir _site
-          cp index.html products.html contact.html news.html styles.css product*.jpg _site/
+          cp index.html products.html contact.html news.html admin.html admin.js firebase-client.js firebase-config.js public-content.js styles.css product*.jpg amal.jpg _site/
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:

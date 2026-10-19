@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isStoreAdmin() {
+      return false;
+    }
+
+    match /store/{collection}/{userId}/{fileName} {
+      allow read: if collection in ['products', 'news', 'photos'];
+      allow create, update: if isStoreAdmin()
+        && request.auth.uid == userId
+        && collection in ['products', 'news', 'photos']
+        && request.resource.size <= 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
+      allow delete: if isStoreAdmin()
+        && collection in ['products', 'news', 'photos'];
+    }
+  }
+}

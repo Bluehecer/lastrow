@@ -15,11 +15,17 @@
                 <li><a href="products.html" aria-current="page">Products</a></li>
                 <li><a href="contact.html">Contact</a></li>
                 <li><a href="news.html">News</a></li>
+                <li><a href="admin.html">Portal</a></li>
             </ul>
         </nav>
     </header>
     <main>
         <section class="product-list">
+            <article class="product-item">
+                <img src="amal.jpg" alt="Amal">
+                <h2>Amal</h2>
+                <button>Add to Cart</button>
+            </article>
             <article class="product-item">
                 <img src="product2.jpg" alt="A Dog">
                 <h2>Ath GOwwa</h2>
@@ -39,6 +45,7 @@
                 <button>Add to Cart</button>
             </article>
         </section>
+        <section class="product-list" id="products-from-store" aria-label="Products added from the store portal"></section>
     </main>
     <div class="canvas-container">
         <canvas id="three-canvas"></canvas>
@@ -171,6 +178,7 @@
         reducedMotion.addEventListener('change', updateMotion);
         animate();
     </script>
+    <script type="module" src="public-content.js"></script>
 
     <footer>
         <p>© 2024 Lastrow Stores</p>
