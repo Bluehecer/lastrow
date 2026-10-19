@@ -2,6 +2,7 @@ import { adminEmails } from "./firebase-config.js";
 import { auth, db, isFirebaseConfigured, storage } from "./firebase-client.js";
 import {
     onAuthStateChanged,
+    reload,
     sendEmailVerification,
     signInWithEmailAndPassword,
     signOut
@@ -26,6 +27,7 @@ import {
 const status = document.querySelector("#portal-status");
 const loginForm = document.querySelector("#login-form");
 const workspace = document.querySelector("#portal-workspace");
+const verificationPanel = document.querySelector("#verification-panel");
 const signOutButton = document.querySelector("#sign-out");
 const signedInAs = document.querySelector("#signed-in-as");
 const maxImageSize = 8 * 1024 * 1024;
@@ -39,6 +41,19 @@ function stopContentListeners() {
 function showStatus(message, kind = "info") {
     status.textContent = message;
     status.dataset.kind = kind;
+}
+
+function firebaseErrorMessage(error, action) {
+    const code = error?.code || "unknown";
+    const help = {
+        "auth/too-many-requests": "Firebase temporarily blocked repeated requests. Wait a while, then try again.",
+        "auth/operation-not-allowed": "Email/password authentication is not enabled in Firebase Authentication.",
+        "auth/unauthorized-continue-uri": "The portal domain is not authorized in Firebase Authentication settings.",
+        "auth/invalid-continue-uri": "The verification email action URL is invalid. Check Firebase Authentication email templates.",
+        "auth/network-request-failed": "Check your internet connection and try again.",
+        "auth/user-disabled": "This Firebase account is disabled."
+    };
+    return `${action} failed (${code}). ${help[code] || error?.message || "Check Firebase Authentication settings and try again."}`;
 }
 
 function escapeHtml(value = "") {
@@ -107,6 +122,29 @@ async function removeRecord(collectionName, recordId, record) {
         console.error("Could not delete item.", error);
         showStatus(error.message || "Could not delete this item.", "error");
     }
+}
+
+async function showAuthorizedWorkspace(user) {
+    const allowedEmails = adminEmails.map((email) => email.toLowerCase());
+    if (!allowedEmails.includes(user.email?.toLowerCase())) {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error("Could not sign out unauthorized account.", error);
+            showStatus(firebaseErrorMessage(error, "Signing out"), "error");
+            return;
+        }
+        showStatus("This account is not on the admin email allowlist. Add its email to firebase-config.js and both Firebase security rules.", "error");
+        return;
+    }
+
+    verificationPanel.hidden = true;
+    loginForm.hidden = true;
+    workspace.hidden = false;
+    signOutButton.hidden = false;
+    signedInAs.textContent = `Signed in as ${user.email || "admin"}`;
+    showStatus("Signed in. Your content syncs with the live store.", "success");
+    if (!listeners.length) startContentListeners();
 }
 
 function refreshTopicOptions(snapshot) {
@@ -237,40 +275,63 @@ signOutButton.addEventListener("click", async () => {
     }
 });
 
+document.querySelector("#resend-verification").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Sign in again before requesting a verification email.");
+        await sendEmailVerification(user);
+        showStatus(`Verification email sent to ${user.email}. Check your inbox and spam folder.`, "success");
+    } catch (error) {
+        console.error("Could not send email verification.", error);
+        showStatus(firebaseErrorMessage(error, "Sending verification email"), "error");
+    } finally {
+        button.disabled = false;
+    }
+});
+
+document.querySelector("#check-verification").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+        const user = auth.currentUser;
+        if (!user) throw new Error("Your sign-in expired. Sign in again after verifying your email.");
+        await reload(user);
+        if (!user.emailVerified) {
+            showStatus("Firebase still reports this email as unverified. Open the latest verification link, then check again.", "error");
+            return;
+        }
+        await user.getIdToken(true);
+        await showAuthorizedWorkspace(user);
+    } catch (error) {
+        console.error("Could not check email verification.", error);
+        showStatus(firebaseErrorMessage(error, "Checking email verification"), "error");
+    } finally {
+        button.disabled = false;
+    }
+});
+
 if (!isFirebaseConfigured) {
     showStatus("Firebase is not configured yet. Add your Firebase web app details to firebase-config.js, then deploy again.", "error");
 } else {
     onAuthStateChanged(auth, async (user) => {
-        const allowedEmails = adminEmails.map((email) => email.toLowerCase());
         if (user && !user.emailVerified) {
-            try {
-                await sendEmailVerification(user);
-                await signOut(auth);
-                showStatus("Verify your email using the link we sent, then sign in again.", "error");
-            } catch (error) {
-                console.error("Could not send email verification.", error);
-                showStatus("This admin account must have a verified email. Could not send a verification link.", "error");
-            }
-            return;
-        }
-        if (user && !allowedEmails.includes(user.email?.toLowerCase())) {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Could not sign out unauthorized account.", error);
-            }
-            showStatus("This account is not on the admin email allowlist.", "error");
+            loginForm.hidden = true;
+            workspace.hidden = true;
+            verificationPanel.hidden = false;
+            signOutButton.hidden = false;
+            showStatus(`Signed in as ${user.email || "this account"}, but its email is not verified.`, "error");
             return;
         }
 
-        loginForm.hidden = Boolean(user);
-        workspace.hidden = !user;
-        signOutButton.hidden = !user;
         if (user) {
-            signedInAs.textContent = `Signed in as ${user.email || "admin"}`;
-            showStatus("Signed in. Your content syncs with the live store.", "success");
-            if (!listeners.length) startContentListeners();
+            await showAuthorizedWorkspace(user);
         } else {
+            loginForm.hidden = false;
+            workspace.hidden = true;
+            verificationPanel.hidden = true;
+            signOutButton.hidden = true;
             stopContentListeners();
             showStatus("Sign in with an authorized store admin account.");
         }

@@ -424,6 +424,34 @@ body > canvas,
     color: #bbf7d0;
 }
 
+.portal-verification {
+    max-width: 680px;
+    padding: 1.25rem;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: 0.9rem;
+    background: rgba(167, 139, 250, 0.055);
+}
+
+.portal-verification h3 {
+    margin: 0 0 0.45rem;
+    color: #f4f5ff;
+    font-size: 1.05rem;
+}
+
+.portal-verification p {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.88rem;
+    line-height: 1.65;
+}
+
+.portal-verification-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
 .portal-login,
 .portal-form {
     display: grid;

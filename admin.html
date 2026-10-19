@@ -44,6 +44,15 @@
                 <p>Admin accounts are created in Firebase Authentication. Public sign-up is disabled.</p>
             </form>
 
+            <section id="verification-panel" class="portal-verification" hidden>
+                <h3>Verify your email</h3>
+                <p>Firebase requires a verified email before this account can manage the store. Send a verification link, then return here after opening it.</p>
+                <div class="portal-verification-actions">
+                    <button id="resend-verification" class="portal-primary-button" type="button">Send verification email</button>
+                    <button id="check-verification" class="portal-secondary-button" type="button">I’ve verified — check again</button>
+                </div>
+            </section>
+
             <div id="portal-workspace" hidden>
                 <p id="signed-in-as" class="portal-signed-in"></p>
                 <div class="portal-tabs" role="tablist" aria-label="Store content">
