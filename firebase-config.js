@@ -8,4 +8,6 @@ export const firebaseConfig = {
     measurementId: "G-37G5LB5BF0"
 };
 
-export const adminEmails = [];
+export const adminEmails = [
+    "sudheeramadawala@gmail.com"
+];

@@ -3,7 +3,9 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function isStoreAdmin() {
-      return false;
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'sudheeramadawala@gmail.com';
     }
 
     match /store/{collection}/{userId}/{fileName} {

@@ -3,7 +3,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isStoreAdmin() {
-      return false;
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'sudheeramadawala@gmail.com';
     }
 
     match /{collection}/{document} {
