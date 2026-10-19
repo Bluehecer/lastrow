@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - Sudheera Stores</title>
-    <link rel="stylesheet" href="styles.ss">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
@@ -12,7 +12,7 @@
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li><a href="products.html">Products</a></li>
+                <li><a href="products.html" aria-current="page">Products</a></li>
                 <li><a href="contact.html">Contact</a></li>
                 <li><a href="news.html">News</a></li>
             </ul>
@@ -40,147 +40,137 @@
             </article>
         </section>
     </main>
-<head>
+    <div class="canvas-container">
+        <canvas id="three-canvas"></canvas>
+        <h1 class="centered-text">Drag &amp; Zoom</h1>
+    </div>
 
-</head>
-<body>
-  <div class="canvas-container">
-    <canvas id="three-canvas"></canvas>
-    <h1 class="centered-text">Drag & Zoom</h1>
-  </div>
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
+        import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
 
-  <script type="module">
-    import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
-    import { OrbitControls } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/controls/OrbitControls.js';
+        const MIN_RADIUS = 7.5;
+        const MAX_RADIUS = 15;
+        const DEPTH = 2;
+        const LEFT_COLOR = '6366f1';
+        const RIGHT_COLOR = '8b5cf6';
+        const NUM_POINTS = 2500;
 
-    const MIN_RADIUS = 7.5;
-    const MAX_RADIUS = 15;
-    const DEPTH = 2;
-    const LEFT_COLOR = "6366f1";
-    const RIGHT_COLOR = "8b5cf6";
-    const NUM_POINTS = 2500;
+        const getGradientStop = (ratio) => {
+            ratio = ratio > 1 ? 1 : ratio < 0 ? 0 : ratio;
 
-    const getGradientStop = (ratio) => {
-      ratio = ratio > 1 ? 1 : ratio < 0 ? 0 : ratio;
+            const c0 = LEFT_COLOR.match(/.{1,2}/g).map(
+                (oct) => parseInt(oct, 16) * (1 - ratio)
+            );
+            const c1 = RIGHT_COLOR.match(/.{1,2}/g).map(
+                (oct) => parseInt(oct, 16) * ratio
+            );
+            const ci = [0, 1, 2].map((i) => Math.min(Math.round(c0[i] + c1[i]), 255));
+            const color = ci
+                .reduce((a, v) => (a << 8) + v, 0)
+                .toString(16)
+                .padStart(6, '0');
 
-      const c0 = LEFT_COLOR.match(/.{1,2}/g).map(
-        (oct) => parseInt(oct, 16) * (1 - ratio)
-      );
-      const c1 = RIGHT_COLOR.match(/.{1,2}/g).map(
-        (oct) => parseInt(oct, 16) * ratio
-      );
-      const ci = [0, 1, 2].map((i) => Math.min(Math.round(c0[i] + c1[i]), 255));
-      const color = ci
-        .reduce((a, v) => (a << 8) + v, 0)
-        .toString(16)
-        .padStart(6, "0");
+            return `#${color}`;
+        };
 
-      return `#${color}`;
-    };
+        const calculateColor = (x) => {
+            const maxDiff = MAX_RADIUS * 2;
+            const distance = x + MAX_RADIUS;
+            const ratio = distance / maxDiff;
+            return getGradientStop(ratio);
+        };
 
-    const calculateColor = (x) => {
-      const maxDiff = MAX_RADIUS * 2;
-      const distance = x + MAX_RADIUS;
+        const randomFromInterval = (min, max) => {
+            return Math.random() * (max - min) + min;
+        };
 
-      const ratio = distance / maxDiff;
+        const makePoints = (count, minRadius, maxRadius, depth) =>
+            Array.from({ length: count }, (_, index) => {
+                const radius = randomFromInterval(minRadius, maxRadius);
+                const angle = Math.random() * Math.PI * 2;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                const z = randomFromInterval(-depth, depth);
+                const color = calculateColor(x).match(/[a-f\d]{2}/gi).map(
+                    (channel) => parseInt(channel, 16) / 255
+                );
+                return { position: [x, y, z], color };
+            });
 
-      const stop = getGradientStop(ratio);
-      return stop;
-    };
+        const points = [
+            ...makePoints(NUM_POINTS, MIN_RADIUS, MAX_RADIUS, DEPTH),
+            ...makePoints(NUM_POINTS / 4, MIN_RADIUS / 2, MAX_RADIUS * 2, DEPTH * 10)
+        ];
+        const positions = new Float32Array(points.flatMap((point) => point.position));
+        const colors = new Float32Array(points.flatMap((point) => point.color));
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-    const randomFromInterval = (min, max) => {
-      return Math.random() * (max - min) + min;
-    };
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(10, -7.5, -5);
 
-    const pointsInner = Array.from(
-      { length: NUM_POINTS },
-      (v, k) => k + 1
-    ).map((num) => {
-      const randomRadius = randomFromInterval(MIN_RADIUS, MAX_RADIUS);
-      const randomAngle = Math.random() * Math.PI * 2;
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('three-canvas'),
+            alpha: true,
+            antialias: true,
+            powerPreference: 'low-power'
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        renderer.setClearColor(0x080a13, 0);
+        renderer.setSize(window.innerWidth, window.innerHeight);
 
-      const x = Math.cos(randomAngle) * randomRadius;
-      const y = Math.sin(randomAngle) * randomRadius;
-      const z = randomFromInterval(-DEPTH, DEPTH);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.maxDistance = 20;
+        controls.minDistance = 10;
+        controls.enableDamping = true;
 
-      const color = calculateColor(x);
+        const pointGroup = new THREE.Group();
+        pointGroup.add(new THREE.Points(
+            geometry,
+            new THREE.PointsMaterial({
+                size: 0.16,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.72,
+                sizeAttenuation: true
+            })
+        ));
+        scene.add(pointGroup);
 
-      return {
-        idx: num,
-        position: [x, y, z],
-        color,
-      };
-    });
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        let frame;
 
-    const pointsOuter = Array.from(
-      { length: NUM_POINTS / 4 },
-      (v, k) => k + 1
-    ).map((num) => {
-      const randomRadius = randomFromInterval(MIN_RADIUS / 2, MAX_RADIUS * 2);
-      const angle = Math.random() * Math.PI * 2;
+        function animate() {
+            renderer.render(scene, camera);
+            if (!reducedMotion.matches && !document.hidden) {
+                pointGroup.rotation.z += 0.0025;
+                controls.update();
+                frame = requestAnimationFrame(animate);
+            }
+        }
 
-      const x = Math.cos(angle) * randomRadius;
-      const y = Math.sin(angle) * randomRadius;
-      const z = randomFromInterval(-DEPTH * 10, DEPTH * 10);
+        function updateMotion() {
+            cancelAnimationFrame(frame);
+            controls.enableDamping = !reducedMotion.matches;
+            animate();
+        }
 
-      const color = calculateColor(x);
-
-      return {
-        idx: num,
-        position: [x, y, z],
-        color,
-      };
-    });
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(10, -7.5, -5);
-
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas') });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.maxDistance = 20;
-    controls.minDistance = 10;
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    scene.add(directionalLight);
-
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(-30, 0, -30);
-    scene.add(pointLight);
-
-    const createPoint = (position, color) => {
-      const geometry = new THREE.SphereGeometry(0.1, 10, 10);
-      const material = new THREE.MeshStandardMaterial({
-        emissive: color,
-        emissiveIntensity: 0.5,
-        roughness: 0.5,
-        color: color
-      });
-      const sphere = new THREE.Mesh(geometry, material);
-      sphere.position.set(...position);
-      return sphere;
-    };
-
-    const pointGroup = new THREE.Group();
-    pointsInner.forEach(point => {
-      pointGroup.add(createPoint(point.position, point.color));
-    });
-    pointsOuter.forEach(point => {
-      pointGroup.add(createPoint(point.position, point.color));
-    });
-    scene.add(pointGroup);
-
-    const animate = () => {
-      requestAnimationFrame(animate);
-      pointGroup.rotation.z += 0.05;
-      controls.update();
-      renderer.render(scene, camera);
-    };
-
-    animate();
-  </script>
+        controls.addEventListener('change', () => {
+            if (reducedMotion.matches) renderer.render(scene, camera);
+        });
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.render(scene, camera);
+        });
+        document.addEventListener('visibilitychange', updateMotion);
+        reducedMotion.addEventListener('change', updateMotion);
+        animate();
+    </script>
 
     <footer>
         <p>© 2024 Lastrow Stores</p>

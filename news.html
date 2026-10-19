@@ -5,25 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News - Sudheera Stores</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-        }
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1; /* Ensure the canvas is behind the content */
-        }
-        main {
-            position: relative;
-            z-index: 1; /* Ensure the main content is above the canvas */
-            color: white; /* Adjust text color for better visibility */
-        }
-    </style>
+</head>
 <body>
     <canvas id="canvas"></canvas>
     <header>
@@ -33,7 +15,7 @@
                 <li><a href="index.html">Home</a></li>
                 <li><a href="products.html">Products</a></li>
                 <li><a href="contact.html">Contact</a></li>
-                <li><a href="news.html">News</a></li>
+                <li><a href="news.html" aria-current="page">News</a></li>
             </ul>
         </nav>
     </header>
@@ -46,17 +28,26 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         let points = [];
         let spread = 0;
+        let frame;
+
+        function resizeCanvas() {
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+            canvas.width = window.innerWidth * pixelRatio;
+            canvas.height = window.innerHeight * pixelRatio;
+            ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+            draw();
+        }
 
         canvas.addEventListener('click', (e) => {
             const x = e.clientX;
             const y = e.clientY;
+            if (points.length === 40) points.shift();
             points.push({ x, y });
-            spread = 0; // Reset spread to start expanding from the new point
+            spread = 0;
+            draw();
         });
 
         function connectPoints() {
@@ -72,21 +63,31 @@
             }
         }
 
-        function animate() {
+        function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             connectPoints();
-            spread += 0.05;
-            requestAnimationFrame(animate);
         }
 
-        animate();
+        function animate() {
+            draw();
+            if (!reducedMotion.matches && !document.hidden) {
+                spread += 0.005;
+                frame = requestAnimationFrame(animate);
+            }
+        }
+
+        function updateMotion() {
+            cancelAnimationFrame(frame);
+            animate();
+        }
 
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            points = [];
+            resizeCanvas();
         });
+        document.addEventListener('visibilitychange', updateMotion);
+        reducedMotion.addEventListener('change', updateMotion);
+        resizeCanvas();
+        animate();
     </script>
       <footer>
         <p>© 2024 Lastrow News</p>
